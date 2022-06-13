@@ -1,0 +1,33 @@
+entity OneSecondClk is
+    Port ( clk : in  STD_LOGIC;
+           LED : out  STD_LOGIC);
+end OneSecondClk;
+
+architecture Behavioral of OneSecondClk is
+signal count_1s, t: unsigned(23 downto 0);
+signal bT_1s: STD_LOGIC;
+
+begin
+t <= "000000000000000000000000";
+
+reg: process (clk) is
+begin
+	if rising_edge(clk) then
+		count_1s <= count_1s + 1;
+		
+		if count_1s > 6000000 then
+			if bT_1s = '0' then
+				bT_1s <= '1';
+				LED <= bT_1s;
+			else
+				bT_1s <= '0';
+				LED <= bT_1s;
+			end if;
+			
+			count_1s <= t;
+		end if;
+	end if;
+end process reg;
+
+end Behavioral;
+
