@@ -1,0 +1,136 @@
+----------------------------------------------------------------------------------
+-- Company: 
+-- Engineer: 
+-- 
+-- Create Date:    17:10:06 06/27/2019 
+-- Design Name: 
+-- Module Name:    S_Machine - Behavioral 
+-- Project Name: 
+-- Target Devices: 
+-- Tool versions: 
+-- Description: 
+--
+-- Dependencies: 
+--
+-- Revision: 
+-- Revision 0.01 - File Created
+-- Additional Comments: 
+--
+----------------------------------------------------------------------------------
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+--use IEEE.NUMERIC_STD.ALL;
+
+-- Uncomment the following library declaration if instantiating
+-- any Xilinx primitives in this code.
+--library UNISIM;
+--use UNISIM.VComponents.all;
+
+entity xmas is
+Port (clk : in  STD_LOGIC;
+	  reset : in  STD_LOGIC;
+	  l1 : out  STD_LOGIC;
+	  l2 : out  STD_LOGIC;
+	  l3 : out  STD_LOGIC;
+	  l4 : out  STD_LOGIC;
+		s1 : in  STD_LOGIC);
+end xmas;
+
+architecture Behavioral of xmas is
+type statetype is (initial, sel1, led1, li1, li2, li3, li4);
+signal state, statenext: statetype;
+signal count_1s, t: unsigned(23 downto 0);
+signal bT_1s: STD_LOGIC;
+
+begin
+t <= "000000000000000000000000";
+
+reg: process (clk) is
+
+begin
+	if rising_edge(clk) then
+		count_1s <= count_1s + 1;
+		
+		if count_1s > 6000000 then -- one second period
+			if bT_1s = '0' then
+				bT_1s <= '1';
+			else
+				bT_1s <= '0';
+			end if;
+			count_1s <= t;
+		end if;
+	end if;
+end process reg;
+
+--state register
+regs: process(bT_1s, reset)
+begin
+if (reset = '0') then 
+state <= initial;
+
+elsif (rising_edge(bT_1s)) then
+state <= statenext;
+
+end if;
+end process;
+
+comlogic: process (state, s1)
+
+begin
+case state is
+
+when initial =>
+if (s1 = '0') then 
+	statenext <= sel1;
+end if;
+
+when sel1 =>
+if (s1 = '0') then 
+	statenext <= led1;
+end if;
+
+when led1 =>
+if (s1 = '0') then 
+	statenext <=li1;
+end if;
+
+when li1 =>
+if (s1 = '0') then 
+	statenext <= li2;
+end  if;
+
+when li2 =>
+if (s1 = '0') then 
+	statenext <= li3;
+end if;
+
+when li3 =>
+if (s1 = '0') then 
+	statenext <= li4;
+end if;
+
+when li4 =>
+if (s1 = '0') then 
+	statenext <= li1;
+end if;
+
+when others => 
+statenext <= initial;
+
+end case;
+end process;
+
+--output
+l1 <= '0' when state = li1 else '1';
+l2 <= '0' when state = li2 else '1';
+l3 <= '0' when state = li3 else '1';
+l4 <= '0' when state = li4 else '1';
+
+end Behavioral;
+
+
